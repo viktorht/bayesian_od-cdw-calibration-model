@@ -58,6 +58,25 @@ def prepare_data_means_model(measurements_raw: pd.DataFrame) -> PreparedData:
         stan_input_function=partial(get_stan_input, x_col=x_col),
     )
 
+def prepare_data_replicate_model(measurements_raw: pd.DataFrame) -> PreparedData:
+    """Prepare data cdw measurements"""
+    x_col = 'OD'
+    measurements_cdw = measurements_raw['cdw']
+    measurements_od = measurements_raw['od']
+
+    return PreparedData(
+        name="replicate_model",
+        coords=CoordDict(
+            {"observation": measurements_od.index.tolist()}
+        ),
+        dims=DIMS,
+        measurements_od=measurements_od,
+        measurements_cdw=measurements_cdw,
+        number_of_cv_folds=N_CV_FOLDS,
+        stan_input_function=partial(get_stan_input, x_col=x_col),
+    )
+
+
 def process_measurements_cdw_mean_model(measurements: pd.DataFrame) -> pd.DataFrame:
     """Process CDW measurements to mean model.
     Cleans up df and calculate the mean values
