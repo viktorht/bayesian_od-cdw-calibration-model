@@ -25,9 +25,13 @@ from src.util import (
     stanify_dict,
 )
 
-NEW_COLNAMES = {"yButIThoughtIdAddSomeLetters": "y"}
-DROPNA_COLS = ["y"]
-N_CV_FOLDS = 10
+NEW_COLNAMES = {'CDW (g/L)' : 'y',
+                'OD' : 'x',
+                'Dilution name': 'Dilution_name'
+            }
+
+
+N_CV_FOLDS = 2
 DIMS = {
     "b": ["covariate"],
     "y": ["observation"],
@@ -35,13 +39,16 @@ DIMS = {
     "llik": ["observation"],
 }
 
+def prepare_data_means_model(measurements_raw: pd.DataFrame) -> PreparedData:
+    """Prepare data cdw measurements"""
+    x_cols = ['x']
+    measurements_cdw = process_measurements_cdw_mean_model(measurements_raw['cdw'])
+    measurements_od = process_measurements_od_mean_model(measurements_raw['od'])
 
-def prepare_data_interaction(measurements_raw: pd.DataFrame) -> PreparedData:
-    """Prepare data with an interaction column."""
-    x_cols = ["x1", "x2", "x1:x2"]
-    measurements = process_measurements(measurements_raw)
+    measurements = pd.merge(measurements_cdw, measurements_od, on = 'Dilution_name')
+
     return PreparedData(
-        name="interaction",
+        name="mean_model",
         coords=CoordDict(
             {"covariate": x_cols, "observation": measurements.index.tolist()}
         ),
@@ -51,65 +58,33 @@ def prepare_data_interaction(measurements_raw: pd.DataFrame) -> PreparedData:
         stan_input_function=partial(get_stan_input, x_cols=x_cols),
     )
 
-
-def prepare_data_no_interaction(measurements_raw: pd.DataFrame) -> PreparedData:
-    """Prepare data with no interaction column."""
-    x_cols = ["x1", "x2"]
-    measurements = process_measurements(measurements_raw)
-    return PreparedData(
-        name="no_interaction",
-        coords=CoordDict(
-            {"covariate": x_cols, "observation": measurements.index.tolist()}
-        ),
-        dims=DIMS,
-        measurements=measurements,
-        number_of_cv_folds=N_CV_FOLDS,
-        stan_input_function=partial(get_stan_input, x_cols=x_cols),
-    )
-
-
-def prepare_data_fake_interaction(
-    measurements_raw: pd.DataFrame,
-) -> PreparedData:
-    """Prepare fake data with an interaction column."""
-    TRUE_PARAMS = {"a": 1, "b": [0.6, -0.3, 0.2], "sigma": 0.3}
-    x_cols = ["x1", "x2", "x1:x2"]
-    measurements = process_measurements(measurements_raw)
-    yhat = TRUE_PARAMS["a"] + measurements[x_cols] @ np.array(TRUE_PARAMS["b"])
-    measurements["y"] = np.random.normal(yhat, TRUE_PARAMS["sigma"])
-    return PreparedData(
-        name="fake_interaction",
-        coords=CoordDict(
-            {"covariate": x_cols, "observation": measurements.index.tolist()}
-        ),
-        dims=DIMS,
-        measurements=measurements,
-        number_of_cv_folds=N_CV_FOLDS,
-        stan_input_function=partial(get_stan_input, x_cols=x_cols),
-    )
-
-
-def process_measurements(measurements: pd.DataFrame) -> pd.DataFrame:
-    """Process the measurements.
-
-    This is to illustrate how you might want to do common table manipulation
-    tasks like filtering, changing column names and adding new columns.
-
-    Note that if you want, you can use different measurement processing
-    functions for different prepare_data functions
-
-    Contains check_is_df a lot because many pandas methods have return signatures
-    including None, but we want to raise an error unless a DataFrame is returned.
-
+def process_measurements_cdw_mean_model(measurements: pd.DataFrame) -> pd.DataFrame:
+    """Process CDW measurements to mean model.
+    Cleans up df and calculate the mean values
     """
-    out = check_is_df(
-        check_is_df(
-            check_is_df(measurements.rename(columns=NEW_COLNAMES))
-            .pipe(make_columns_lower_case)
-            .dropna(subset=DROPNA_COLS, axis=0)
-        )
+    out = (measurements
+        .rename(columns=NEW_COLNAMES)
+        .filter(['Dilution_name', 'y'])
+        .groupby('Dilution_name')
+        .agg('mean')
     ).copy()
-    out["x1:x2"] = out["x1"] * out["x2"]
+
+    check_is_df(out)
+    return out
+
+
+def process_measurements_od_mean_model(measurements: pd.DataFrame) -> pd.DataFrame:
+    """Process od measurements to mean model.
+    Cleans up df and calculate the mean values
+    """
+    out = (measurements
+        .rename(columns=NEW_COLNAMES)
+        .filter(['Dilution_name', 'x'])
+        .groupby('Dilution_name')
+        .agg('mean')
+    ).copy()
+
+    check_is_df(out)
     return out
 
 
