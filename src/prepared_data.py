@@ -2,7 +2,7 @@
 
 
 from dataclasses import dataclass
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 import pandas as pd
 
@@ -14,6 +14,8 @@ class PreparedData:
     name: str
     coords: CoordDict
     dims: Dict[str, Any]
-    measurements: pd.DataFrame
     number_of_cv_folds: int
     stan_input_function: Callable[..., StanInput]
+    measurements: Optional[pd.DataFrame] = None # used for mean_model
+    measurements_od: Optional[pd.DataFrame] = None
+    measurements_cdw: Optional[pd.DataFrame] = None
