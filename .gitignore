@@ -62,6 +62,7 @@ target/
 
 # DotEnv configuration
 .env
+.venv_bayes-od-cdw/
 
 # Database
 *.db
