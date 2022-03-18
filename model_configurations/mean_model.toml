@@ -1,0 +1,16 @@
+name = "mean_model"
+stan_file = "src/stan/od-cdw-calibration_means.stan"
+data_dir = "data/prepared/mean_model"
+modes = ["prior", "posterior"]
+
+[stanc_options]
+warn-pedantic = true
+
+[sample_kwargs]
+show_progress = true
+save_warmup = false
+iter_warmup = 2000
+iter_sampling = 2000
+
+#[sample_kwargs.cross_validation]
+#chains = 1

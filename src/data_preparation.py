@@ -41,7 +41,7 @@ DIMS = {
 
 def prepare_data_means_model(measurements_raw: pd.DataFrame) -> PreparedData:
     """Prepare data cdw measurements"""
-    x_cols = ['x']
+    x_col = 'x'
     measurements_cdw = process_measurements_cdw_mean_model(measurements_raw['cdw'])
     measurements_od = process_measurements_od_mean_model(measurements_raw['od'])
 
@@ -50,12 +50,12 @@ def prepare_data_means_model(measurements_raw: pd.DataFrame) -> PreparedData:
     return PreparedData(
         name="mean_model",
         coords=CoordDict(
-            {"covariate": x_cols, "observation": measurements.index.tolist()}
+            {"observation": measurements.index.tolist()}
         ),
         dims=DIMS,
         measurements=measurements,
         number_of_cv_folds=N_CV_FOLDS,
-        stan_input_function=partial(get_stan_input, x_cols=x_cols),
+        stan_input_function=partial(get_stan_input, x_col=x_col),
     )
 
 def process_measurements_cdw_mean_model(measurements: pd.DataFrame) -> pd.DataFrame:
@@ -90,7 +90,7 @@ def process_measurements_od_mean_model(measurements: pd.DataFrame) -> pd.DataFra
 
 def get_stan_input(
     measurements: pd.DataFrame,
-    x_cols: List[str],
+    x_col: str,
     likelihood: bool,
     train_ix: List[int],
     test_ix: List[int],
@@ -101,8 +101,7 @@ def get_stan_input(
             "N": len(measurements),
             "N_train": len(train_ix),
             "N_test": len(test_ix),
-            "K": len(x_cols),
-            "x": measurements[x_cols],
+            "x": measurements[x_col],
             "y": measurements["y"],
             "likelihood": int(likelihood),
             "ix_train": [i + 1 for i in train_ix],
