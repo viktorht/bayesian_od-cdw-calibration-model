@@ -31,6 +31,8 @@ stan_data = {
     'likelihood' : 1,
     'dilution_x' : (pd.factorize(od_clean['Dilution name'])[0] + 1).tolist(), # stan does not accept 0 for categorical mapping therefore + 1
     'dilution_y' : (pd.factorize(cdw_clean['Dilution name'])[0] + 1).tolist(),
+    "ix_train":[1,2,3,4,5,6],
+    "ix_test":[1,2,3,4,5,6],
     'prior_mean_sigma_eps' : 2,
     'prior_std_sigma_eps' : 1,
     'sigma_x' : 0.5,
