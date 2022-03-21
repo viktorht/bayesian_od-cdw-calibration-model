@@ -9,6 +9,7 @@ from cmdstanpy import write_stan_json
 from src.data_preparation import (
     get_stan_inputs,
     prepare_data_means_model,
+    prepare_data_replicate_model
 )
 from src.util import check_is_df
 
@@ -30,7 +31,8 @@ def main():
     }
     print("Preparing data...")
     for data_prep_function in [
-        prepare_data_means_model
+        prepare_data_means_model,
+        prepare_data_replicate_model
     ]:
         prepared_data = data_prep_function(raw_data)
         output_dir = os.path.join(PREPARED_DIR, prepared_data.name)
