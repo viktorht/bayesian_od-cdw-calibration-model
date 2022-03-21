@@ -90,3 +90,6 @@ target/
 # Mypy cache
 .mypy_cache/
 
+# compiled stan files
+src/stan/od-cdw-calibration_dilu-based
+src/stan/od-cdw-calibration_dilu-based.hpp
