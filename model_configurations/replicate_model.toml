@@ -4,7 +4,7 @@ data_dir = "data/prepared/replicate_model"
 modes = ["posterior"]
 
 [stanc_options]
-warn-pedantic = true
+warn-pedantic = false
 
 [sample_kwargs]
 show_progress = true
