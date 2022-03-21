@@ -4,7 +4,9 @@ from cmdstanpy import write_stan_json
 import pandas as pd
 import os
 
+
 OUTPUT_DIR = os.path.join('data','prepared','replicate_model')
+
 
 ## Preparing data
 od = pd.read_csv(os.path.join('data', 'raw', 'od_cdw_calibration-od.csv'), index_col = 0)
@@ -14,6 +16,11 @@ cdw_clean = cdw.query("`CDW rel error (g/L)` < 0.5")
 od_clean = od.query("`Dilution name`.isin(@cdw_clean['Dilution name'])")
 
 assert od_clean.shape[0] == cdw_clean.shape[0], 'There are not an equal amount of measurements'
+
+
+coords = {"observation": od_clean['Dilution name'].to_list()}
+dims = {'x_meas' : ['observations'], 'y_meas' : ['observations'], 'ypred' : ['observations']}
+
 
 # Organize stan input
 stan_data = {
@@ -35,3 +42,9 @@ if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
 write_stan_json(os.path.join(OUTPUT_DIR,'stan_input_posterior.json'), stan_data)
+
+with open(os.path.join(OUTPUT_DIR, "coords.json"), "w+") as f:
+    json.dump(coords, f)
+with open(os.path.join(OUTPUT_DIR, "dims.json"), "w+") as f:
+    json.dump(dims, f)
+
