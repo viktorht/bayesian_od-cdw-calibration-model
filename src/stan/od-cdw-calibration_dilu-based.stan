@@ -23,10 +23,12 @@ parameters {
    //vector[N] eps; // A model error for each measurement pair
 }
 transformed parameters {
-   real<lower=0> sigma;
-   sigma = sqrt(sigma_y^2 + sigma_eps^2); // combined model error and measurement error 
+   /* ... declarations ... statements ... */
+   //real<lower=0> sigma;
+   //sigma = sqrt(sigma_y^2 + sigma_eps^2); // combined model error and measurement error 
 }
 model {
+ 
     // Priors
     x_true ~ normal(60, 60); // needs to cover all reasonable values of x independent of cultures/dilutions
     y_true ~ normal(7, 7); // needs to cover all reasonable values of y independent of cultures/dilutions
@@ -39,17 +41,17 @@ model {
    y_meas ~ normal(y_true[dilution_y], sigma_y);
 
    // likelihood
-   y_true ~ normal(beta2 * x_true, sigma);
+   y_true ~ normal(beta2 * x_true, sigma_eps);
 
 }
 generated quantities {
   real ypred[D];
   real log_lik[D];
   
-  ypred = normal_rng(y_true, sigma);
+  ypred = normal_rng(y_true, sigma_eps);
   
   // calculate log likelihood
   for (i in 1:D){
-    log_lik[i] = normal_lpdf(y_meas[i] | y_true[i], sigma); 
+    log_lik[i] = normal_lpdf(y_meas[i] | y_true[i], sigma_eps); 
   }
 }
