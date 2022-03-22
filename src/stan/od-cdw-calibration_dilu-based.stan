@@ -41,7 +41,7 @@ model {
    y_meas ~ normal(y_true[dilution_y], sigma_y);
 
    // likelihood
-   y_true ~ normal(beta2 * x_true, sigma_eps);
+   y_true ~ normal(beta1 + beta2 * x_true, sigma_eps);
 
 }
 generated quantities {
